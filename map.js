@@ -154,6 +154,13 @@ const handleGetData = (err, japan, d37PXI, d61PXI, hm400, pc138, pc200, pc350) =
   featureCollectionToMap(collection);
 
   map.addControl(new mapboxgl.NavigationControl());
+
+  var scale = new mapboxgl.ScaleControl({
+    maxWidth: 250,
+    unit: 'metric'
+  });
+  map.addControl(scale);
+
   map.addControl(new MapboxGeocoder({
     accessToken: mapboxgl.accessToken,
   }),'top-left');
