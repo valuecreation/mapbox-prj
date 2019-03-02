@@ -3,8 +3,9 @@ mapboxgl.accessToken = 'pk.eyJ1IjoidmFsdWVjcmVhdGlvbiIsImEiOiJjanM0Z21xamQwNHRrM
 
 var map = new mapboxgl.Map({
     container: 'map', // container id
-    style: 'mapbox://styles/mapbox/light-v9', // stylesheet location
-    center: [139, 35], // starting position [lng, lat]
+    //style: 'mapbox://styles/mapbox/light-v9', // stylesheet location
+    style: 'mapbox://styles/valuecreation/cjsrap48e5oyz1fseqkhv2r24',
+    center: [138.915150, 37.033030],
     zoom: 5 // starting zoom
 });
 
@@ -151,6 +152,11 @@ const handleGetData = (err, japan, d37PXI, d61PXI, hm400, pc138, pc200, pc350) =
 
   japanToMap(japan);
   featureCollectionToMap(collection);
+
+  map.addControl(new mapboxgl.NavigationControl());
+  map.addControl(new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+  }),'top-left');
 
   map.on('click', 'japan-layer', function (e) {
     new mapboxgl.Popup()
