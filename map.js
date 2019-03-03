@@ -1,12 +1,64 @@
 
 mapboxgl.accessToken = 'pk.eyJ1IjoidmFsdWVjcmVhdGlvbiIsImEiOiJjanM0Z21xamQwNHRrM3lueXZrOHBxZmNmIn0.oF6cKsx1z4NzUNiJ7RTXNQ';
 
-var map = new mapboxgl.Map({
+const map = new mapboxgl.Map({
     container: 'map', // container id
     //style: 'mapbox://styles/mapbox/light-v9', // stylesheet location
     style: 'mapbox://styles/valuecreation/cjsrap48e5oyz1fseqkhv2r24',
     center: [138.915150, 37.033030],
-    zoom: 5 // starting zoom
+    zoom: 7, // starting zoom
+    pitch: 50 // pitch in degrees
+});
+
+/************** Map Control *******************/
+map.addControl(new mapboxgl.NavigationControl());
+
+let scale = new mapboxgl.ScaleControl({
+  maxWidth: 250,
+  unit: 'metric'
+});
+map.addControl(scale);
+
+const geocoder = new MapboxGeocoder({
+  accessToken: mapboxgl.accessToken,
+});
+
+map.addControl(geocoder, 'top-left');
+
+/************** Map Control *******************/
+
+// Create a popup, but don't add it to the map yet.
+let popup = new mapboxgl.Popup({
+  closeButton: false,
+  closeOnClick: false
+});
+
+map.on('mousemove', 'japanLayer', function (e) {
+
+  map.getCanvas().style.cursor = 'pointer';
+
+  popup.setLngLat(e.lngLat)
+    .setHTML(e.features[0].properties.KEN + e.features[0].properties.SIKUCHOSON + "<br> 人口 : " + e.features[0].properties.P_NUM +  "<br> 世帯数 : " + e.features[0].properties.H_NUM)
+    .addTo(map);
+      
+});
+
+map.on('mouseleave', 'japanLayer', function() {
+  map.getCanvas().style.cursor = '';
+  popup.remove();
+});
+
+map.on('click', 'unclustered-point', function (e) {
+  new mapboxgl.Popup()
+    .setLngLat(e.lngLat)
+    .setHTML("Datetime : " + e.features[0].properties.datetime)
+    .addTo(map);
+});
+
+// Listen for the `result` event from the MapboxGeocoder that is triggered when a user
+// makes a selection and add a symbol that matches the result.
+geocoder.on('result', function(ev) {
+  map.getSource('single-point').setData(ev.result.geometry);
 });
 
 const japanGeoJsonURL = 'https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/japan.geojson';
@@ -55,7 +107,7 @@ const japanToMap = (japan) => {
     data: japan,
   });
   map.addLayer({
-    'id': 'japan-layer',
+    'id': 'japanLayer',
     'type': 'fill',
     'source': 'japan',
     'layout': {},
@@ -73,10 +125,11 @@ const japanToMap = (japan) => {
         100000, '#A25626',
         500000, '#8B4225',
         1000000, '#723122'
-      ],        
-        'fill-opacity': 0.75,
-      }
-    });
+      ],      
+      'fill-opacity': 0.75,
+      "fill-outline-color": "#fff"
+    }
+  });
 };
 
 const featureCollectionToMap = (collection) => {
@@ -86,8 +139,9 @@ const featureCollectionToMap = (collection) => {
     cluster: true,
     clusterRadius: 50
   });
+
   map.addLayer({
-    id: 'clusters',
+    id: 'FassSelected',
     type: 'circle',
     source: 'collection',
     filter: ["has", "point_count"],
@@ -100,9 +154,9 @@ const featureCollectionToMap = (collection) => {
         "#f28cb1"
         ],
         "circle-radius": [
-        "step",
-        ["get", "point_count"],
-        20, 100, 30, 300, 40
+          "step",
+          ["get", "point_count"],
+          20, 100, 30, 300, 40
         ]
     }
   });
@@ -126,11 +180,12 @@ const featureCollectionToMap = (collection) => {
     filter: ["!", ["has", "point_count"]],
     paint: {
       "circle-color": "#11b4da",
-      "circle-radius": 15,
+      "circle-radius": 10,
       "circle-stroke-width": 1,
       "circle-stroke-color": "#fff"
     }
   });
+  
 };
 
 const handleGetData = (err, japan, d37PXI, d61PXI, hm400, pc138, pc200, pc350) => {
@@ -153,33 +208,46 @@ const handleGetData = (err, japan, d37PXI, d61PXI, hm400, pc138, pc200, pc350) =
   japanToMap(japan);
   featureCollectionToMap(collection);
 
-  map.addControl(new mapboxgl.NavigationControl());
-
-  var scale = new mapboxgl.ScaleControl({
-    maxWidth: 250,
-    unit: 'metric'
+  map.addSource('single-point', {
+    "type": "geojson",
+    "data": {
+    "type": "FeatureCollection",
+      "features": []
+    }
   });
-  map.addControl(scale);
-
-  map.addControl(new MapboxGeocoder({
-    accessToken: mapboxgl.accessToken,
-  }),'top-left');
-
-  map.on('click', 'japan-layer', function (e) {
-    new mapboxgl.Popup()
-      .setLngLat(e.lngLat)
-      .setHTML(e.features[0].properties.KEN + e.features[0].properties.SIKUCHOSON + " 人口 : " + e.features[0].properties.P_NUM)
-      .addTo(map);
-  });
-
-  map.on('click', 'unclustered-point', function (e) {
-    new mapboxgl.Popup()
-      .setLngLat(e.lngLat)
-      .setHTML("Datetime : " + e.features[0].properties.datetime)
-      .addTo(map);
+   
+  map.addLayer({
+    "id": "point",
+    "source": "single-point",
+    "type": "circle",
+    "paint": {
+      "circle-radius": 10,
+      "circle-color": "#007cbf"
+    }
   });
 
 }
+
+document.getElementById('listing-group').addEventListener('change', function(e) {
+
+  let layerId = e.target.id;
+  let layer = map.getLayer(layerId);
+
+  if (layer.visibility === 'visible') {
+    if (layerId == 'FassSelected') {
+      map.setLayoutProperty('cluster-count', 'visibility', 'none');
+      map.setLayoutProperty('unclustered-point', 'visibility', 'none');
+    }
+    map.setLayoutProperty(layer.id, 'visibility', 'none');
+  } else {
+    if (layerId == 'FassSelected') {
+      map.setLayoutProperty('cluster-count', 'visibility', 'visible');
+      map.setLayoutProperty('unclustered-point', 'visibility', 'visible');
+    }
+    map.setLayoutProperty(layer.id, 'visibility', 'visible');
+  }
+
+});
 
 d3.queue()
   .defer(d3.json, japanGeoJsonURL)
