@@ -56,7 +56,9 @@ map.on('click', 'FassSelected', function (e) {
   let zoomLevel = map.getZoom();
   
   //console.log(zoomLevel);
-  map.zoomTo(zoomLevel + 1);
+  map.setCenter(e.lngLat);
+  map.zoomTo(zoomLevel + 1, {duration: 1000});
+
 });
 
 map.on('click', 'unclustered-point', function (e) {
