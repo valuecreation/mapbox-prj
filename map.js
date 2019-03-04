@@ -34,18 +34,29 @@ let popup = new mapboxgl.Popup({
 });
 
 map.on('mousemove', 'japanLayer', function (e) {
-
   map.getCanvas().style.cursor = 'pointer';
 
   popup.setLngLat(e.lngLat)
     .setHTML(e.features[0].properties.KEN + e.features[0].properties.SIKUCHOSON + "<br> 人口 : " + e.features[0].properties.P_NUM +  "<br> 世帯数 : " + e.features[0].properties.H_NUM)
     .addTo(map);
-      
 });
 
 map.on('mouseleave', 'japanLayer', function() {
   map.getCanvas().style.cursor = '';
   popup.remove();
+});
+
+map.on('mousemove', 'FassSelected', function (e) {
+  map.getCanvas().style.cursor = '';
+  popup.remove();
+});
+
+map.on('click', 'FassSelected', function (e) {
+  map.getCanvas().style.cursor = 'pointer';
+  let zoomLevel = map.getZoom();
+  
+  //console.log(zoomLevel);
+  map.zoomTo(zoomLevel + 1);
 });
 
 map.on('click', 'unclustered-point', function (e) {
@@ -61,43 +72,42 @@ geocoder.on('result', function(ev) {
   map.getSource('single-point').setData(ev.result.geometry);
 });
 
-const japanGeoJsonURL = 'https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/japan.geojson';
+let japanGeoJsonURL = 'https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/japan.geojson';
 
-const d37pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/D37PXI.json";
-const d61pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/D61PXI.json";
-const hm400JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/HM400.json";
-const pc138JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC138.json";
-const pc200JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC200.json";
-const pc350JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC350.json";
-
+let d37pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/D37PXI.json";
+let d61pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/D61PXI.json";
+let hm400JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/HM400.json";
+let pc138JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC138.json";
+let pc200JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC200.json";
+let pc350JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC350.json";
 
 const getD37PXIPoints = (d37PXI) => {
-  const mPoints = d37PXI.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = d37PXI.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
   return mPoints;
 };
 
 const getD61PXIPoints = (d61PXI) => {
-  const mPoints = d61PXI.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = d61PXI.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
   return mPoints;
 };
 
 const getHM400Points = (hm400) => {
-  const mPoints = hm400.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = hm400.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
   return mPoints;
 };
 
 const getPC138Points = (pc138) => {
-  const mPoints = pc138.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = pc138.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
   return mPoints;
 };
 
 const getPC200Points = (pc200) => {
-  const mPoints = pc200.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = pc200.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
   return mPoints;
 };
 
 const getPC350Points = (pc350) => {
-  const mPoints = pc350.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = pc350.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
   return mPoints;
 };
 
