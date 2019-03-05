@@ -46,12 +46,10 @@ map.on('mouseleave', 'japanLayer', function() {
 });
 
 map.on('mousemove', 'FassCluster', function (e) {
-  map.getCanvas().style.cursor = '';
   popup.remove();
 });
 
 map.on('mousemove', 'FassLayer', function (e) {
-  map.getCanvas().style.cursor = '';
   popup.remove();
 });
 
@@ -76,6 +74,17 @@ map.on('click', 'FassCluster', function (e) {
 });
 
 map.on('click', 'unclustered-point', function (e) {
+  new mapboxgl.Popup()
+    .setLngLat(e.lngLat)
+    .setHTML(
+      "残燃料 : " + e.features[0].properties.FuelRemaining +
+      "<br/> 燃料使用量 : " + e.features[0].properties.FuelUsed + 
+      "<br/> 燃料消費量 : " + e.features[0].properties.FuelConsumed +
+      "<br/> Datetime : " + e.features[0].properties.datetime)
+    .addTo(map);
+});
+
+map.on('click', 'FassLayer', function (e) {
   new mapboxgl.Popup()
     .setLngLat(e.lngLat)
     .setHTML(
@@ -113,12 +122,11 @@ document.getElementById('listing-group').addEventListener('change', function(e) 
 
 });
 
-/*
 document.getElementById('slider').addEventListener('input', function(e) {
   let hour = parseInt(e.target.value);
   
   let filters = ['==', 'Hour', hour];
-  map.setFilter('unclustered-point', filters);
+  map.setFilter('FassLayer', filters);
 
   // converting 0-23 hour to AMPM format
   let ampm = hour >= 12 ? 'PM' : 'AM';
@@ -127,9 +135,8 @@ document.getElementById('slider').addEventListener('input', function(e) {
   // update text in the UI
   document.getElementById('active-hour').innerText = hour12 + ampm;
 
-  console.log(hour);
 });
-*/
+
 
 let japanGeoJsonURL = 'https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/japan.geojson';
 
@@ -268,7 +275,6 @@ const featureCollectionToMap = (collection) => {
     data: collection
   });
 
-  /*
   map.addLayer({
     id: 'FassLayer',
     type: 'circle',
@@ -276,14 +282,15 @@ const featureCollectionToMap = (collection) => {
     paint: {
       'circle-radius': [
         '/',
-        ['-', 5, ['number', ['get', 'FuelConsumed'], 5]],
-        5
+        ['-', 10, ['number', ['get', 'Hour'], 10]],
+        0.5
       ],
-      'circle-opacity': 0.8,
-      'circle-color': "orangered"
+      'circle-opacity': 0.6,
+      'circle-color': "lime",
+      "circle-stroke-width": 1,
+      "circle-stroke-color": "#fff"
     }
   });
-  */
 
   map.addLayer({
     id: 'FassCluster',
@@ -330,7 +337,11 @@ const featureCollectionToMap = (collection) => {
       "circle-stroke-color": "#fff"
     }
   });
-  
+
+  map.setLayoutProperty('FassCluster', 'visibility', 'none');
+  map.setLayoutProperty('cluster-count', 'visibility', 'none');
+  map.setLayoutProperty('unclustered-point', 'visibility', 'none');
+
 };
 
 const handleGetData = (err, japan, d37PXI, d61PXI, hm400, pc138, pc200, pc350) => {

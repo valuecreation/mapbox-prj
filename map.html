@@ -130,19 +130,21 @@
 
 <body>
     <div id='map'></div>
-    <!--
+
     <div class='map-overlay top'>
         <div class='map-overlay-inner'>
             <h2>建機位置の情報 (時間) :  <label id='active-hour'>12PM</label></h2>
             <input id="slider" class="row" type="range" min="0" max="23" step="1" value="12">
         </div>
     </div>
-    -->
+
     <nav id='listing-group' class='listing-group'>
         <input type='checkbox' id='japanLayer' checked='checked'>
         <label for='japanLayer'>全国市区町村界（人口）</label>
-        <input type='checkbox' id='FassCluster' checked='checked'>
-        <label for='FassCluster'>建機位置情報</label>
+        <input type='checkbox' id='FassLayer' checked='checked'>
+        <label for='FassLayer'>建機位置情報</label>
+        <input type='checkbox' id='FassCluster'>
+        <label for='FassCluster'>建機位置情報（クラスタリング）</label>
     </nav>
     <div id='county-legend' class='legend'>
         <h4>人口</h4>
