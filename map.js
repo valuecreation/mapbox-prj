@@ -24,7 +24,6 @@ const geocoder = new MapboxGeocoder({
 });
 
 map.addControl(geocoder, 'top-left');
-
 /************** Map Control *******************/
 
 // Create a popup, but don't add it to the map yet.
@@ -46,25 +45,44 @@ map.on('mouseleave', 'japanLayer', function() {
   popup.remove();
 });
 
-map.on('mousemove', 'FassSelected', function (e) {
+map.on('mousemove', 'FassCluster', function (e) {
   map.getCanvas().style.cursor = '';
   popup.remove();
 });
 
-map.on('click', 'FassSelected', function (e) {
-  map.getCanvas().style.cursor = 'pointer';
-  let zoomLevel = map.getZoom();
-  
-  //console.log(zoomLevel);
-  map.setCenter(e.lngLat);
-  map.zoomTo(zoomLevel + 1, {duration: 1000});
+map.on('mousemove', 'FassLayer', function (e) {
+  map.getCanvas().style.cursor = '';
+  popup.remove();
+});
 
+map.on('mousemove', 'unclustered-point', function (e) {
+  popup.remove();
+});
+
+map.on('click', 'FassCluster', function (e) {
+  
+  let features = map.queryRenderedFeatures(e.point, { layers: ['FassCluster'] });
+  let clusterId = features[0].properties.cluster_id;
+  map.getSource('cluster').getClusterExpansionZoom(clusterId, function (err, zoom) {
+    if (err)
+      return;
+   
+    map.easeTo({
+      center: features[0].geometry.coordinates,
+      zoom: zoom
+    });
+
+  });
 });
 
 map.on('click', 'unclustered-point', function (e) {
   new mapboxgl.Popup()
     .setLngLat(e.lngLat)
-    .setHTML("Datetime : " + e.features[0].properties.datetime)
+    .setHTML(
+      "残燃料 : " + e.features[0].properties.FuelRemaining +
+      "<br/> 燃料使用量 : " + e.features[0].properties.FuelUsed + 
+      "<br/> 燃料消費量 : " + e.features[0].properties.FuelConsumed +
+      "<br/> Datetime : " + e.features[0].properties.datetime)
     .addTo(map);
 });
 
@@ -73,6 +91,45 @@ map.on('click', 'unclustered-point', function (e) {
 geocoder.on('result', function(ev) {
   map.getSource('single-point').setData(ev.result.geometry);
 });
+
+document.getElementById('listing-group').addEventListener('change', function(e) {
+
+  let layerId = e.target.id;
+  let layer = map.getLayer(layerId);
+
+  if (layer.visibility === 'visible') {
+    if (layerId == 'FassCluster') {
+      map.setLayoutProperty('cluster-count', 'visibility', 'none');
+      map.setLayoutProperty('unclustered-point', 'visibility', 'none');
+    }
+    map.setLayoutProperty(layer.id, 'visibility', 'none');
+  } else {
+    if (layerId == 'FassCluster') {
+      map.setLayoutProperty('cluster-count', 'visibility', 'visible');
+      map.setLayoutProperty('unclustered-point', 'visibility', 'visible');
+    }
+    map.setLayoutProperty(layer.id, 'visibility', 'visible');
+  }
+
+});
+
+/*
+document.getElementById('slider').addEventListener('input', function(e) {
+  let hour = parseInt(e.target.value);
+  
+  let filters = ['==', 'Hour', hour];
+  map.setFilter('unclustered-point', filters);
+
+  // converting 0-23 hour to AMPM format
+  let ampm = hour >= 12 ? 'PM' : 'AM';
+  let hour12 = hour % 12 ? hour % 12 : 12;
+
+  // update text in the UI
+  document.getElementById('active-hour').innerText = hour12 + ampm;
+
+  console.log(hour);
+});
+*/
 
 let japanGeoJsonURL = 'https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/japan.geojson';
 
@@ -84,32 +141,86 @@ let pc200JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/m
 let pc350JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC350.json";
 
 const getD37PXIPoints = (d37PXI) => {
-  let mPoints = d37PXI.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = d37PXI.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude], 
+    { 
+      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelUsed: d.FuelUsed.FuelConsumed,
+      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      datetime: d.Location.datetime,
+      id: i 
+    }  
+    ));
   return mPoints;
 };
 
 const getD61PXIPoints = (d61PXI) => {
-  let mPoints = d61PXI.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = d61PXI.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude],
+    { 
+      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelUsed: d.FuelUsed.FuelConsumed,
+      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      datetime: d.Location.datetime, 
+      id: i 
+    }  
+    ));
   return mPoints;
 };
 
 const getHM400Points = (hm400) => {
-  let mPoints = hm400.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = hm400.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude], 
+    { 
+      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelUsed: d.FuelUsed.FuelConsumed,
+      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      datetime: d.Location.datetime,
+      id: i 
+    }  
+    ));
   return mPoints;
 };
 
 const getPC138Points = (pc138) => {
-  let mPoints = pc138.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = pc138.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude], 
+    { 
+      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelUsed: d.FuelUsed.FuelConsumed,
+      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      datetime: d.Location.datetime,
+      id: i 
+    }  
+    ));
   return mPoints;
 };
 
 const getPC200Points = (pc200) => {
-  let mPoints = pc200.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = pc200.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude],
+    { 
+      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelUsed: d.FuelUsed.FuelConsumed,
+      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      datetime: d.Location.datetime,
+      id: i 
+    }
+    ));
   return mPoints;
 };
 
 const getPC350Points = (pc350) => {
-  let mPoints = pc350.map((d, i) => turf.point([d.Location.Longitude, d.Location.Latitude], { datetime: d.Location.datetime, id: i }));
+  let mPoints = pc350.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude],
+    { 
+      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelUsed: d.FuelUsed.FuelConsumed,
+      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      datetime: d.Location.datetime,
+      id: i
+    }  
+    ));
   return mPoints;
 };
 
@@ -145,17 +256,39 @@ const japanToMap = (japan) => {
 };
 
 const featureCollectionToMap = (collection) => {
-  map.addSource('collection', {
+  map.addSource('cluster', {
     type: 'geojson',
     data: collection,
     cluster: true,
     clusterRadius: 50
   });
 
+  map.addSource('collection', {
+    type: 'geojson',
+    data: collection
+  });
+
+  /*
   map.addLayer({
-    id: 'FassSelected',
+    id: 'FassLayer',
     type: 'circle',
     source: 'collection',
+    paint: {
+      'circle-radius': [
+        '/',
+        ['-', 5, ['number', ['get', 'FuelConsumed'], 5]],
+        5
+      ],
+      'circle-opacity': 0.8,
+      'circle-color': "orangered"
+    }
+  });
+  */
+
+  map.addLayer({
+    id: 'FassCluster',
+    type: 'circle',
+    source: 'cluster',
     filter: ["has", "point_count"],
     paint: {
       "circle-color": [
@@ -176,7 +309,7 @@ const featureCollectionToMap = (collection) => {
   map.addLayer({
     id: "cluster-count",
     type: "symbol",
-    source: "collection",
+    source: "cluster",
     filter: ["has", "point_count"],
     layout: {
       "text-field": "{point_count_abbreviated}",
@@ -184,11 +317,11 @@ const featureCollectionToMap = (collection) => {
       "text-size": 12
     }
   });
-     
+    
   map.addLayer({
     id: "unclustered-point",
     type: "circle",
-    source: "collection",
+    source: "cluster",
     filter: ["!", ["has", "point_count"]],
     paint: {
       "circle-color": "#11b4da",
@@ -217,6 +350,11 @@ const handleGetData = (err, japan, d37PXI, d61PXI, hm400, pc138, pc200, pc350) =
 
   let collection = turf.featureCollection(result_concat);
 
+  collection.features = collection.features.map(function(d) {
+    d.properties.Hour = Math.floor( Math.random() * 24 );
+    return d;
+  });
+
   japanToMap(japan);
   featureCollectionToMap(collection);
 
@@ -239,27 +377,6 @@ const handleGetData = (err, japan, d37PXI, d61PXI, hm400, pc138, pc200, pc350) =
   });
 
 }
-
-document.getElementById('listing-group').addEventListener('change', function(e) {
-
-  let layerId = e.target.id;
-  let layer = map.getLayer(layerId);
-
-  if (layer.visibility === 'visible') {
-    if (layerId == 'FassSelected') {
-      map.setLayoutProperty('cluster-count', 'visibility', 'none');
-      map.setLayoutProperty('unclustered-point', 'visibility', 'none');
-    }
-    map.setLayoutProperty(layer.id, 'visibility', 'none');
-  } else {
-    if (layerId == 'FassSelected') {
-      map.setLayoutProperty('cluster-count', 'visibility', 'visible');
-      map.setLayoutProperty('unclustered-point', 'visibility', 'visible');
-    }
-    map.setLayoutProperty(layer.id, 'visibility', 'visible');
-  }
-
-});
 
 d3.queue()
   .defer(d3.json, japanGeoJsonURL)
