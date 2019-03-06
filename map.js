@@ -137,15 +137,14 @@ document.getElementById('slider').addEventListener('input', function(e) {
 
 });
 
-
 let japanGeoJsonURL = 'https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/japan.geojson';
-
-let d37pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/D37PXI.json";
-let d61pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/D61PXI.json";
-let hm400JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/HM400.json";
-let pc138JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC138.json";
-let pc200JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC200.json";
-let pc350JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/Faas-selected/PC350.json";
+// Faas Data
+let d37pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/D37PXI.json";
+let d61pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/D61PXI.json";
+let hm400JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/HM400.json";
+let pc138JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC138.json";
+let pc200JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC200.json";
+let pc350JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC350.json";
 
 const getD37PXIPoints = (d37PXI) => {
   let mPoints = d37PXI.map((d, i) => turf.point(
