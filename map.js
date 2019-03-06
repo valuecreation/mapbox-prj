@@ -57,8 +57,12 @@ map.on('mousemove', 'unclustered-point', function (e) {
   popup.remove();
 });
 
+map.on('mousemove', 'cigarLayer', function (e) {
+  popup.remove();
+});
+
 map.on('click', 'FassCluster', function (e) {
-  
+  map.getCanvas().style.cursor = 'pointer';
   let features = map.queryRenderedFeatures(e.point, { layers: ['FassCluster'] });
   let clusterId = features[0].properties.cluster_id;
   map.getSource('cluster').getClusterExpansionZoom(clusterId, function (err, zoom) {
@@ -74,6 +78,7 @@ map.on('click', 'FassCluster', function (e) {
 });
 
 map.on('click', 'unclustered-point', function (e) {
+  map.getCanvas().style.cursor = 'pointer';
   new mapboxgl.Popup()
     .setLngLat(e.lngLat)
     .setHTML(
@@ -85,6 +90,7 @@ map.on('click', 'unclustered-point', function (e) {
 });
 
 map.on('click', 'FassLayer', function (e) {
+  map.getCanvas().style.cursor = 'pointer';
   new mapboxgl.Popup()
     .setLngLat(e.lngLat)
     .setHTML(
@@ -95,11 +101,24 @@ map.on('click', 'FassLayer', function (e) {
     .addTo(map);
 });
 
+map.on('click', 'cigarLayer', function (e) {
+  map.getCanvas().style.cursor = 'pointer';
+  new mapboxgl.Popup()
+    .setLngLat(e.lngLat)
+    .setHTML(
+      "方向 : " + e.features[0].properties.Direction +
+      "<br/> 動作中 : " + e.features[0].properties.InOperating + 
+      "<br/> Datetime : " + e.features[0].properties.Datetime)
+    .addTo(map);
+});
+
 // Listen for the `result` event from the MapboxGeocoder that is triggered when a user
 // makes a selection and add a symbol that matches the result.
 geocoder.on('result', function(ev) {
   map.getSource('single-point').setData(ev.result.geometry);
 });
+
+const countyLegendEl = document.getElementById('county-legend');
 
 document.getElementById('listing-group').addEventListener('change', function(e) {
 
@@ -112,12 +131,18 @@ document.getElementById('listing-group').addEventListener('change', function(e) 
       map.setLayoutProperty('unclustered-point', 'visibility', 'none');
     }
     map.setLayoutProperty(layer.id, 'visibility', 'none');
+    if (layerId == 'japanLayer') { 
+      countyLegendEl.style.display = 'none';
+    }
   } else {
     if (layerId == 'FassCluster') {
       map.setLayoutProperty('cluster-count', 'visibility', 'visible');
       map.setLayoutProperty('unclustered-point', 'visibility', 'visible');
     }
     map.setLayoutProperty(layer.id, 'visibility', 'visible');
+    if (layerId == 'japanLayer') { 
+      countyLegendEl.style.display = 'block';
+    }
   }
 
 });
@@ -137,14 +162,18 @@ document.getElementById('slider').addEventListener('input', function(e) {
 
 });
 
-let japanGeoJsonURL = 'https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/japan.geojson';
-// Faas Data
-let d37pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/D37PXI.json";
-let d61pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/D61PXI.json";
-let hm400JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/HM400.json";
-let pc138JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC138.json";
-let pc200JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC200.json";
-let pc350JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC350.json";
+const getD6NPoints = (d6N) => {
+  let mPoints = d6N.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude], 
+    { 
+      Direction: d.Direction,
+      InOperating: d.InOperating,
+      Datetime: d.Datetime,
+      id: i 
+    }  
+    ));
+  return turf.featureCollection(mPoints);
+};
 
 const getD37PXIPoints = (d37PXI) => {
   let mPoints = d37PXI.map((d, i) => turf.point(
@@ -231,162 +260,198 @@ const getPC350Points = (pc350) => {
 };
 
 const japanToMap = (japan) => {
-  map.addSource('japan',{
-    type: 'geojson',
-    data: japan,
-  });
-  map.addLayer({
-    'id': 'japanLayer',
-    'type': 'fill',
-    'source': 'japan',
-    'layout': {},
-    'paint': {
-      'fill-color': [
-        'interpolate',
-        ['linear'],
-        ['get', 'P_NUM'],
-        0, '#F2F12D',
-        100, '#EED322',
-        1000, '#E6B71E',
-        5000, '#DA9C20',
-        10000, '#CA8323',
-        50000, '#B86B25',
-        100000, '#A25626',
-        500000, '#8B4225',
-        1000000, '#723122'
-      ],      
-      'fill-opacity': 0.75,
-      "fill-outline-color": "#fff"
-    }
-  });
+
+    map.addSource('japan',{
+      type: 'geojson',
+      data: japan,
+    });
+    map.addLayer({
+      'id': 'japanLayer',
+      'type': 'fill',
+      'source': 'japan',
+      'layout': {},
+      'paint': {
+        'fill-color': [
+          'interpolate',
+          ['linear'],
+          ['get', 'P_NUM'],
+          0, '#F2F12D',
+          100, '#EED322',
+          1000, '#E6B71E',
+          5000, '#DA9C20',
+          10000, '#CA8323',
+          50000, '#B86B25',
+          100000, '#A25626',
+          500000, '#8B4225',
+          1000000, '#723122'
+        ],      
+        'fill-opacity': 0.75,
+        "fill-outline-color": "#fff"
+      }
+    });
 };
 
 const featureCollectionToMap = (collection) => {
-  map.addSource('cluster', {
-    type: 'geojson',
-    data: collection,
-    cluster: true,
-    clusterRadius: 50
-  });
+    map.addSource('cluster', {
+      type: 'geojson',
+      data: collection,
+      cluster: true,
+      clusterRadius: 50
+    });
 
-  map.addSource('collection', {
-    type: 'geojson',
-    data: collection
-  });
+    map.addSource('collection', {
+      type: 'geojson',
+      data: collection
+    });
 
-  map.addLayer({
-    id: 'FassLayer',
-    type: 'circle',
-    source: 'collection',
-    paint: {
-      'circle-radius': [
-        '/',
-        ['-', 10, ['number', ['get', 'Hour'], 10]],
-        0.5
-      ],
-      'circle-opacity': 0.6,
-      'circle-color': "lime",
-      "circle-stroke-width": 1,
-      "circle-stroke-color": "#fff"
-    }
-  });
-
-  map.addLayer({
-    id: 'FassCluster',
-    type: 'circle',
-    source: 'cluster',
-    filter: ["has", "point_count"],
-    paint: {
-      "circle-color": [
-        "step",
-        ["get", "point_count"],
-        "#51bbd6", 100,
-        "#f1f075", 300,
-        "#f28cb1"
+    map.addLayer({
+      id: 'FassLayer',
+      type: 'circle',
+      source: 'collection',
+      paint: {
+        'circle-radius': [
+          '/',
+          ['-', 10, ['number', ['get', 'Hour'], 10]],
+          0.5
         ],
-        "circle-radius": [
+        'circle-opacity': 0.6,
+        'circle-color': "lime",
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#fff"
+      }
+    });
+
+    map.addLayer({
+      id: 'FassCluster',
+      type: 'circle',
+      source: 'cluster',
+      filter: ["has", "point_count"],
+      paint: {
+        "circle-color": [
           "step",
           ["get", "point_count"],
-          20, 100, 30, 300, 40
-        ]
-    }
-  });
+          "#51bbd6", 100,
+          "#f1f075", 300,
+          "#f28cb1"
+          ],
+          "circle-radius": [
+            "step",
+            ["get", "point_count"],
+            20, 100, 30, 300, 40
+          ]
+      }
+    });
 
-  map.addLayer({
-    id: "cluster-count",
-    type: "symbol",
-    source: "cluster",
-    filter: ["has", "point_count"],
-    layout: {
-      "text-field": "{point_count_abbreviated}",
-      "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-      "text-size": 12
-    }
-  });
-    
-  map.addLayer({
-    id: "unclustered-point",
-    type: "circle",
-    source: "cluster",
-    filter: ["!", ["has", "point_count"]],
-    paint: {
-      "circle-color": "#11b4da",
-      "circle-radius": 10,
-      "circle-stroke-width": 1,
-      "circle-stroke-color": "#fff"
-    }
-  });
+    map.addLayer({
+      id: "cluster-count",
+      type: "symbol",
+      source: "cluster",
+      filter: ["has", "point_count"],
+      layout: {
+        "text-field": "{point_count_abbreviated}",
+        "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+        "text-size": 12
+      }
+    });
+      
+    map.addLayer({
+      id: "unclustered-point",
+      type: "circle",
+      source: "cluster",
+      filter: ["!", ["has", "point_count"]],
+      paint: {
+        "circle-color": "#11b4da",
+        "circle-radius": 10,
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#fff"
+      }
+    });
 
-  map.setLayoutProperty('FassCluster', 'visibility', 'none');
-  map.setLayoutProperty('cluster-count', 'visibility', 'none');
-  map.setLayoutProperty('unclustered-point', 'visibility', 'none');
+    map.setLayoutProperty('FassCluster', 'visibility', 'none');
+    map.setLayoutProperty('cluster-count', 'visibility', 'none');
+    map.setLayoutProperty('unclustered-point', 'visibility', 'none');
 
 };
 
-const handleGetData = (err, japan, d37PXI, d61PXI, hm400, pc138, pc200, pc350) => {
+const cigarToMap = (cigarData) => {
 
-  let d37PXIPoints = getD37PXIPoints(d37PXI);
-  let d61PXIPoints = getD37PXIPoints(d61PXI);
-  let hm400Points = getD37PXIPoints(hm400);
-  let pc138Points = getD37PXIPoints(pc138);
-  let pc200Points = getD37PXIPoints(pc200);
-  let pc350Points = getD37PXIPoints(pc350);
+    map.addSource('cigarData', {
+      type: 'geojson',
+      data: cigarData
+    });
 
-  let result_concat = d37PXIPoints.concat(d61PXIPoints);
-  result_concat = result_concat.concat(hm400Points);
-  result_concat = result_concat.concat(pc138Points);
-  result_concat = result_concat.concat(pc200Points);
-  result_concat = result_concat.concat(pc350Points);
+    map.addLayer({
+      id: 'cigarLayer',
+      source: 'cigarData',
+      type: 'circle',
+      paint: {
+        'circle-radius': 10,
+        'circle-color':  "red"
+      }
+    });
 
-  let collection = turf.featureCollection(result_concat);
+};
 
-  collection.features = collection.features.map(function(d) {
-    d.properties.Hour = Math.floor( Math.random() * 24 );
-    return d;
-  });
+const handleGetData = (err, japan, d37PXI, d61PXI, hm400, pc138, pc200, pc350, d6n) => {
 
-  japanToMap(japan);
-  featureCollectionToMap(collection);
+    let d37PXIPoints = getD37PXIPoints(d37PXI);
+    let d61PXIPoints = getD37PXIPoints(d61PXI);
+    let hm400Points = getD37PXIPoints(hm400);
+    let pc138Points = getD37PXIPoints(pc138);
+    let pc200Points = getD37PXIPoints(pc200);
+    let pc350Points = getD37PXIPoints(pc350);
 
-  map.addSource('single-point', {
-    "type": "geojson",
-    "data": {
-    "type": "FeatureCollection",
-      "features": []
-    }
-  });
-   
-  map.addLayer({
-    "id": "point",
-    "source": "single-point",
-    "type": "circle",
-    "paint": {
-      "circle-radius": 10,
-      "circle-color": "#007cbf"
-    }
-  });
+    let result_concat = d37PXIPoints.concat(d61PXIPoints);
+    result_concat = result_concat.concat(hm400Points);
+    result_concat = result_concat.concat(pc138Points);
+    result_concat = result_concat.concat(pc200Points);
+    result_concat = result_concat.concat(pc350Points);
+
+    let collection = turf.featureCollection(result_concat);
+
+    collection.features = collection.features.map(function(d) {
+      d.properties.Hour = Math.floor( Math.random() * 24 );
+      return d;
+    });
+
+
+    let d6nPoints = getD6NPoints(d6n);
+
+    japanToMap(japan);
+    featureCollectionToMap(collection);
+    
+    cigarToMap(d6nPoints);
+
+    map.addSource('single-point', {
+      "type": "geojson",
+      "data": {
+      "type": "FeatureCollection",
+        "features": []
+      }
+    });
+    
+    map.addLayer({
+      "id": "point",
+      "source": "single-point",
+      "type": "circle",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#007cbf"
+      }
+    });
 
 }
+
+let japanGeoJsonURL = 'https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/japan.geojson';
+// Faas Data
+let d37pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/D37PXI.json";
+let d61pxiJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/D61PXI.json";
+let hm400JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/HM400.json";
+let pc138JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC138.json";
+let pc200JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC200.json";
+let pc350JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC350.json";
+
+let d6nJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/cigarData/D6N_data.canread.json";
 
 d3.queue()
   .defer(d3.json, japanGeoJsonURL)
@@ -396,5 +461,6 @@ d3.queue()
   .defer(d3.json, pc138JsonURL)
   .defer(d3.json, pc200JsonURL)
   .defer(d3.json, pc350JsonURL)
+  .defer(d3.json, d6nJsonURL)
   .await(handleGetData);
   
