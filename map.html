@@ -125,12 +125,34 @@
             cursor: ew-resize;
         }
 
+        #menu {
+            position: absolute;
+            background: #fff;
+            padding: 10px;
+            font-family: 'Open Sans', sans-serif;
+        }
+
     </style>
 </head>
 
 <body>
     <div id='map'></div>
-
+    <!--
+    <div id='menu'>
+        <input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
+        <label for='basic'>basic</label>
+        <input id='streets' type='radio' name='rtoggle' value='streets'>
+        <label for='streets'>streets</label>
+        <input id='bright' type='radio' name='rtoggle' value='bright'>
+        <label for='bright'>bright</label>
+        <input id='light' type='radio' name='rtoggle' value='light'>
+        <label for='light'>light</label>
+        <input id='dark' type='radio' name='rtoggle' value='dark'>
+        <label for='dark'>dark</label>
+        <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+        <label for='satellite'>satellite</label>
+    </div>
+    -->
     <div class='map-overlay top'>
         <div class='map-overlay-inner'>
             <h2>建機位置の情報 (時間) :  <label id='active-hour'>12PM</label></h2>

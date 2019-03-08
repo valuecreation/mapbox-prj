@@ -3,8 +3,8 @@ mapboxgl.accessToken = 'pk.eyJ1IjoidmFsdWVjcmVhdGlvbiIsImEiOiJjanM0Z21xamQwNHRrM
 
 const map = new mapboxgl.Map({
     container: 'map', // container id
-    //style: 'mapbox://styles/mapbox/light-v9', // stylesheet location
-    style: 'mapbox://styles/valuecreation/cjsrap48e5oyz1fseqkhv2r24',
+    style: 'mapbox://styles/mapbox/dark-v9', // stylesheet location
+    //style: 'mapbox://styles/valuecreation/cjsrap48e5oyz1fseqkhv2r24',
     center: [138.915150, 37.033030],
     zoom: 7, // starting zoom
     pitch: 50 // pitch in degrees
@@ -161,6 +161,20 @@ document.getElementById('slider').addEventListener('input', function(e) {
   document.getElementById('active-hour').innerText = hour12 + ampm;
 
 });
+
+/*
+var layerList = document.getElementById('menu');
+var inputs = layerList.getElementsByTagName('input');
+
+const switchLayer = (layer) => {
+  var layerId = layer.target.id;
+  map.setStyle('mapbox://styles/mapbox/' + layerId + '-v9');
+}
+
+for (var i = 0; i < inputs.length; i++) {
+  inputs[i].onclick = switchLayer;
+}
+*/
 
 const getD6NPoints = (d6N) => {
   let mPoints = d6N.map((d, i) => turf.point(
