@@ -4,8 +4,8 @@ mapboxgl.accessToken = 'pk.eyJ1IjoidmFsdWVjcmVhdGlvbiIsImEiOiJjanM0Z21xamQwNHRrM
 const map = new mapboxgl.Map({
     container: 'map', // container id
     style: 'mapbox://styles/mapbox/dark-v9', // stylesheet location
-    center: [138.915150, 37.033030],
-    zoom: 5, // starting zoom
+    center: [140.5122, 37.2819],
+    zoom: 8 // starting zoom
 });
 
 /************** Map Control *******************/
@@ -17,6 +17,15 @@ let scale = new mapboxgl.ScaleControl({
 });
 map.addControl(scale);
 
+// Store an array of quantiles
+let max = 34615;
+let fifth = 34615 / 5;
+let quantiles = [];
+for (i = 0; i < 5; i++) {
+  let quantile = (i + 1) * fifth;
+  quantiles.push(quantile);
+}
+
 // Create a popup, but don't add it to the map yet.
 let popup = new mapboxgl.Popup({
   closeButton: false,
@@ -24,7 +33,6 @@ let popup = new mapboxgl.Popup({
 });
 
 map.on('click', 'faas-point', function (e) {
-  map.getCanvas().style.cursor = 'pointer';
   new mapboxgl.Popup()
     .setLngLat(e.lngLat)
     .setHTML(
@@ -33,6 +41,15 @@ map.on('click', 'faas-point', function (e) {
       "<br/> 燃料消費量 (24時間) : " + e.features[0].properties.FuelUsedLast24 + " リットル" +
       "<br/> Datetime : " + e.features[0].properties.datetime)
     .addTo(map);
+});
+
+// Use the same approach as above to indicate that the symbols are clickable
+// by changing the cursor style to 'pointer'.
+map.on('mousemove', function (e) {
+  var features = map.queryRenderedFeatures(e.point, {
+    layers: ['faas-point']
+  });
+  map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
 });
 
 const getD37PXIPoints = (d37PXI) => {
@@ -127,16 +144,49 @@ const faasToMap = (faasData) => {
     });
 
     map.addLayer({
-      id: 'FassLayer',
+      id: 'faas-point',
       type: 'circle',
       source: 'faasData',
       paint: {
-        'circle-radius': 10,
-        'circle-opacity': 0.3,
-        'circle-color': "blue",
-        "circle-stroke-width": 1,
-        "circle-stroke-color": "#fff"
+        'circle-color': '#D49A66',
+        // Add data-driven styles for circle radius
+        'circle-radius': {
+          property: 'FuelUsed',
+          type: 'exponential',
+          stops: [
+            [124, 2],
+            [34615, 10]
+          ]
+        },
+        'circle-opacity': 0.8
       }
+    });
+
+    // By default, exponential property functions have a base of 1.
+    // Exponential functions with a base of 1 are linear.
+    // The relationship between the radius of any point and the number of pedestrians is:
+    // radius = rateOfChange * numberOfPedestrians + radiusAtZero
+    let minRadius = 2;
+    let maxRadius = 10;
+    let minPedestrians = 124;
+    let maxPedestrians = 34615;
+
+    // Find the rateOfChange using two points
+    let rateOfChange = (maxRadius - minRadius) / (maxPedestrians - minPedestrians);
+
+    // Use the rateOfChange to solve for for radiusAtZero
+    // radius = rateOfChange * numberOfPedestrians + radiusAtZero
+    let radiusAtZero = maxRadius - (rateOfChange * maxPedestrians);
+
+    let legend = document.getElementById('legend');
+
+    function circleSize(quantile) {
+      let radius = (rateOfChange * quantile) + radiusAtZero;
+      let diameter = radius * 2;
+      return diameter;
+    }
+    quantiles.forEach(function (quantile) {
+      legend.insertAdjacentHTML('beforeend', '<div><span style="width:' + circleSize(quantile) + 'px;height:' + circleSize(quantile) + 'px;margin: 0 ' + [(20 - circleSize(quantile)) / 2] + 'px"></span><p>' + quantile + '</p></div>');
     });
 
 };
@@ -171,6 +221,12 @@ let pc138JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/m
 let pc200JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC200.json";
 let pc350JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/faasData/PC350.json";
 
+// cigar Data
+let d6nJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/cigarData/D6N_data.canread.json";
+let d6rJsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/cigarData/D6R_data.canread.json";
+let zh200JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/cigarData/ZH200_data.canread.json";
+let zh470JsonURL = "https://raw.githubusercontent.com/valuecreation/mapbox-prj/master/data/cigarData/ZX470.canread.json";
+
 d3.queue()
   .defer(d3.json, d37pxiJsonURL)
   .defer(d3.json, d61pxiJsonURL)
@@ -178,5 +234,9 @@ d3.queue()
   .defer(d3.json, pc138JsonURL)
   .defer(d3.json, pc200JsonURL)
   .defer(d3.json, pc350JsonURL)
+  .defer(d3.json, d6nJsonURL)
+  .defer(d3.json, d6rJsonURL)
+  .defer(d3.json, zh200JsonURL)
+  .defer(d3.json, zh470JsonURL)
   .await(handleGetData);
   
