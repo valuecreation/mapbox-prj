@@ -29,8 +29,8 @@ map.on('click', 'faas-point', function (e) {
     .setLngLat(e.lngLat)
     .setHTML(
       "残燃料 : " + e.features[0].properties.FuelRemaining +
-      "<br/> 燃料使用量 : " + e.features[0].properties.FuelUsed +
-      "<br/> 燃料消費量 : " + e.features[0].properties.FuelConsumed +
+      "<br/> 燃料消費量 : " + e.features[0].properties.FuelUsed +
+      "<br/> 燃料消費量 (24時間) : " + e.features[0].properties.FuelUsedLast24 +
       "<br/> Datetime : " + e.features[0].properties.datetime)
     .addTo(map);
 });
@@ -104,7 +104,7 @@ const getD37PXIPoints = (d37PXI) => {
     { 
       FuelRemaining: d.FuelRemaining.Percent + "%",
       FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed,
       datetime: d.Location.datetime,
       id: i 
     }  
@@ -117,9 +117,9 @@ const getD61PXIPoints = (d61PXI) => {
     [d.Location.Longitude, d.Location.Latitude],
     { 
       FuelRemaining: d.FuelRemaining.Percent + "%",
-      FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
-      datetime: d.Location.datetime, 
+      FuelUsed: d.FuelUsed.FuelConsumed + "リットル",
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed + "リットル",
+      datetime: d.Location.datetime,
       id: i 
     }  
     ));
@@ -131,8 +131,8 @@ const getHM400Points = (hm400) => {
     [d.Location.Longitude, d.Location.Latitude], 
     { 
       FuelRemaining: d.FuelRemaining.Percent + "%",
-      FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsed: d.FuelUsed.FuelConsumed + "リットル",
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed + "リットル",
       datetime: d.Location.datetime,
       id: i 
     }  
@@ -145,8 +145,8 @@ const getPC138Points = (pc138) => {
     [d.Location.Longitude, d.Location.Latitude], 
     { 
       FuelRemaining: d.FuelRemaining.Percent + "%",
-      FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsed: d.FuelUsed.FuelConsumed + "リットル",
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed + "リットル",
       datetime: d.Location.datetime,
       id: i 
     }  
@@ -159,8 +159,8 @@ const getPC200Points = (pc200) => {
     [d.Location.Longitude, d.Location.Latitude],
     { 
       FuelRemaining: d.FuelRemaining.Percent + "%",
-      FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsed: d.FuelUsed.FuelConsumed + "リットル",
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed + "リットル",
       datetime: d.Location.datetime,
       id: i 
     }
@@ -173,10 +173,10 @@ const getPC350Points = (pc350) => {
     [d.Location.Longitude, d.Location.Latitude],
     { 
       FuelRemaining: d.FuelRemaining.Percent + "%",
-      FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsed: d.FuelUsed.FuelConsumed + "リットル",
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed + "リットル",
       datetime: d.Location.datetime,
-      id: i
+      id: i 
     }  
     ));
   return mPoints;
@@ -186,7 +186,7 @@ const faasToMap = (faasData) => {
 
     map.addSource('faasData', {
       type: 'geojson',
-      data: faasData,
+      data: faasData
     });
 
     map.addLayer({
@@ -199,7 +199,7 @@ const faasToMap = (faasData) => {
         "heatmap-weight": [
           "interpolate",
           ["linear"],
-          ["get", "FuelConsumed"],
+          ["get", "FuelUsed"],
           0, 0,
           6, 1
         ],
@@ -259,23 +259,23 @@ const faasToMap = (faasData) => {
           7, [
             "interpolate",
             ["linear"],
-            ["get", "FuelConsumed"],
+            ["get", "FuelUsed"],
             1, 1,
             6, 4
           ],
           16, [
             "interpolate",
             ["linear"],
-            ["get", "FuelConsumed"],
+            ["get", "FuelUsed"],
             1, 5,
             6, 50
           ]
         ],
-        // Color circle by faasData FuelConsumed
+        // Color circle by faasData FuelUsed
         "circle-color": [
           "interpolate",
           ["linear"],
-          ["get", "FuelConsumed"],
+          ["get", "FuelUsed"],
           1, "rgba(33,102,172,0)",
           2, "rgb(103,169,207)",
           3, "rgb(209,229,240)",
