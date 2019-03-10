@@ -64,9 +64,9 @@ map.on('click', 'unclustered-point', function (e) {
   new mapboxgl.Popup()
     .setLngLat(e.lngLat)
     .setHTML(
-      "残燃料 : " + e.features[0].properties.FuelRemaining +
-      "<br/> 燃料使用量 : " + e.features[0].properties.FuelUsed +
-      "<br/> 燃料消費量 : " + e.features[0].properties.FuelConsumed +
+      "残燃料 : " + e.features[0].properties.FuelRemaining + " %" +
+      "<br/> 燃料消費量 : " + e.features[0].properties.FuelUsed + " リットル" +
+      "<br/> 燃料消費量 (24時間) : " + e.features[0].properties.FuelUsedLast24 + " リットル" +
       "<br/> Datetime : " + e.features[0].properties.datetime)
     .addTo(map);
 });
@@ -138,9 +138,9 @@ const getD37PXIPoints = (d37PXI) => {
   let mPoints = d37PXI.map((d, i) => turf.point(
     [d.Location.Longitude, d.Location.Latitude], 
     { 
-      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelRemaining: d.FuelRemaining.Percent,
       FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed,
       datetime: d.Location.datetime,
       id: i 
     }  
@@ -152,9 +152,9 @@ const getD61PXIPoints = (d61PXI) => {
   let mPoints = d61PXI.map((d, i) => turf.point(
     [d.Location.Longitude, d.Location.Latitude],
     { 
-      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelRemaining: d.FuelRemaining.Percent,
       FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed,
       datetime: d.Location.datetime, 
       id: i 
     }  
@@ -166,9 +166,9 @@ const getHM400Points = (hm400) => {
   let mPoints = hm400.map((d, i) => turf.point(
     [d.Location.Longitude, d.Location.Latitude], 
     { 
-      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelRemaining: d.FuelRemaining.Percent,
       FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed,
       datetime: d.Location.datetime,
       id: i 
     }  
@@ -180,9 +180,9 @@ const getPC138Points = (pc138) => {
   let mPoints = pc138.map((d, i) => turf.point(
     [d.Location.Longitude, d.Location.Latitude], 
     { 
-      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelRemaining: d.FuelRemaining.Percent,
       FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed,
       datetime: d.Location.datetime,
       id: i 
     }  
@@ -194,9 +194,9 @@ const getPC200Points = (pc200) => {
   let mPoints = pc200.map((d, i) => turf.point(
     [d.Location.Longitude, d.Location.Latitude],
     { 
-      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelRemaining: d.FuelRemaining.Percent,
       FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed,
       datetime: d.Location.datetime,
       id: i 
     }
@@ -208,9 +208,9 @@ const getPC350Points = (pc350) => {
   let mPoints = pc350.map((d, i) => turf.point(
     [d.Location.Longitude, d.Location.Latitude],
     { 
-      FuelRemaining: d.FuelRemaining.Percent + "%",
+      FuelRemaining: d.FuelRemaining.Percent,
       FuelUsed: d.FuelUsed.FuelConsumed,
-      FuelConsumed: d.FuelUsedLast24.FuelConsumed, 
+      FuelUsedLast24: d.FuelUsedLast24.FuelConsumed,
       datetime: d.Location.datetime,
       id: i
     }  
@@ -347,7 +347,7 @@ const handleGetData = (err, d37PXI, d61PXI, hm400, pc138, pc200, pc350, d6n, d6r
     faasData = faasData.concat(pc200Points);
     faasData = faasData.concat(pc350Points);
 
-    faasDataCollection = turf.featureCollection(faasData);
+    let faasDataCollection = turf.featureCollection(faasData);
 
     // シガー
     let d6nPoints = getD6NPoints(d6n);
@@ -359,7 +359,7 @@ const handleGetData = (err, d37PXI, d61PXI, hm400, pc138, pc200, pc350, d6n, d6r
     cigarData = cigarData.concat(zh200Points);
     cigarData = cigarData.concat(zh470Points);
 
-    cigarDataCollection = turf.featureCollection(cigarData);
+    let cigarDataCollection = turf.featureCollection(cigarData);
 
     faasToMap(faasDataCollection);
     cigarToMap(cigarDataCollection);
