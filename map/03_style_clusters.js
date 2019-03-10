@@ -335,11 +335,11 @@ const handleGetData = (err, d37PXI, d61PXI, hm400, pc138, pc200, pc350, d6n, d6r
 
     // 建機位置情報
     let d37PXIPoints = getD37PXIPoints(d37PXI);
-    let d61PXIPoints = getD37PXIPoints(d61PXI);
-    let hm400Points = getD37PXIPoints(hm400);
-    let pc138Points = getD37PXIPoints(pc138);
-    let pc200Points = getD37PXIPoints(pc200);
-    let pc350Points = getD37PXIPoints(pc350);
+    let d61PXIPoints = getD61PXIPoints(d61PXI);
+    let hm400Points = getHM400Points(hm400);
+    let pc138Points = getPC138Points(pc138);
+    let pc200Points = getPC200Points(pc200);
+    let pc350Points = getPC350Points(pc350);
 
     let faasData = d37PXIPoints.concat(d61PXIPoints);
     faasData = faasData.concat(hm400Points);

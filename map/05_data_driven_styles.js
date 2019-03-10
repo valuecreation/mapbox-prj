@@ -35,58 +35,6 @@ map.on('click', 'faas-point', function (e) {
     .addTo(map);
 });
 
-const getD6NPoints = (d6N) => {
-  let mPoints = d6N.map((d, i) => turf.point(
-    [d.Location.Longitude, d.Location.Latitude], 
-    { 
-      Direction: d.Direction,
-      InOperating: d.InOperating,
-      Datetime: d.Datetime,
-      id: i 
-    }  
-    ));
-  return mPoints;
-};
-
-const getD6RPoints = (d6R) => {
-  let mPoints = d6R.map((d, i) => turf.point(
-    [d.Location.Longitude, d.Location.Latitude], 
-    { 
-      Direction: d.Direction,
-      InOperating: d.InOperating,
-      Datetime: d.Datetime,
-      id: i 
-    }  
-    ));
-  return mPoints;
-};
-
-const getZH200Points = (zH200) => {
-  let mPoints = zH200.map((d, i) => turf.point(
-    [d.Location.Longitude, d.Location.Latitude], 
-    { 
-      Direction: d.Direction,
-      InOperating: d.InOperating,
-      Datetime: d.Datetime,
-      id: i 
-    }  
-    ));
-  return mPoints;
-};
-
-const getZH470Points = (zH470) => {
-  let mPoints = zH470.map((d, i) => turf.point(
-    [d.Location.Longitude, d.Location.Latitude], 
-    { 
-      Direction: d.Direction,
-      InOperating: d.InOperating,
-      Datetime: d.Datetime,
-      id: i 
-    }  
-    ));
-  return mPoints;
-};
-
 const getD37PXIPoints = (d37PXI) => {
   let mPoints = d37PXI.map((d, i) => turf.point(
     [d.Location.Longitude, d.Location.Latitude], 
@@ -193,16 +141,15 @@ const faasToMap = (faasData) => {
 
 };
 
-
 const handleGetData = (err, d37PXI, d61PXI, hm400, pc138, pc200, pc350) => {
 
     // 建機位置情報
     let d37PXIPoints = getD37PXIPoints(d37PXI);
-    let d61PXIPoints = getD37PXIPoints(d61PXI);
-    let hm400Points = getD37PXIPoints(hm400);
-    let pc138Points = getD37PXIPoints(pc138);
-    let pc200Points = getD37PXIPoints(pc200);
-    let pc350Points = getD37PXIPoints(pc350);
+    let d61PXIPoints = getD61PXIPoints(d61PXI);
+    let hm400Points = getHM400Points(hm400);
+    let pc138Points = getPC138Points(pc138);
+    let pc200Points = getPC200Points(pc200);
+    let pc350Points = getPC350Points(pc350);
 
     let faasData = d37PXIPoints.concat(d61PXIPoints);
     faasData = faasData.concat(hm400Points);
