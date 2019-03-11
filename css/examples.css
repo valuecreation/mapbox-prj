@@ -1,0 +1,68 @@
+.jumbotron {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  margin-bottom: 0;
+  background-color: #fff;
+}
+@media (min-width: 768px) {
+  .jumbotron {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+.jumbotron p:last-child {
+  margin-bottom: 0;
+}
+
+.jumbotron-heading {
+  font-weight: 300;
+}
+
+.jumbotron .container {
+  max-width: 40rem;
+}
+
+.mapbox_01_img {
+  width: 100%;
+  height: 250px;
+  background: url('../image/01_basemap.png');
+  background-size: cover;
+}
+
+.mapbox_02_img {
+  width: 100%;
+  height: 250px;
+  background: url('../image/02_japan_map.png');
+  background-size: cover;
+}
+
+.mapbox_03_img {
+  width: 100%;
+  height: 250px;
+  background: url('../image/03_style_clusters.png');
+  background-size: cover;
+}
+
+.mapbox_04_img {
+  width: 100%;
+  height: 250px;
+  background: url('../image/04_heatmap_layer.png');
+  background-size: cover;
+}
+
+.mapbox_05_img {
+  width: 100%;
+  height: 250px;
+  background: url('../image/05_data_driven_styles.png');
+  background-size: cover;
+}
+
+footer {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+footer p {
+  margin-bottom: .25rem;
+}
