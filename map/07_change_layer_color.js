@@ -3,9 +3,9 @@ mapboxgl.accessToken = 'pk.eyJ1IjoidmFsdWVjcmVhdGlvbiIsImEiOiJjanM0Z21xamQwNHRrM
 
 const map = new mapboxgl.Map({
     container: 'map', // container id
-    style: 'mapbox://styles/mapbox/dark-v9', // stylesheet location
-    center: [140.5122, 37.2819],
-    zoom: 8 // starting zoom
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [140.575519, 37.349211],
+    zoom: 8, // starting zoom
 });
 
 /************** Map Control *******************/
@@ -17,22 +17,14 @@ let scale = new mapboxgl.ScaleControl({
 });
 map.addControl(scale);
 
-// Store an array of quantiles
-let max = 34615;
-let fifth = 34615 / 5;
-let quantiles = [];
-for (i = 0; i < 5; i++) {
-  let quantile = (i + 1) * fifth;
-  quantiles.push(quantile);
-}
-
 // Create a popup, but don't add it to the map yet.
 let popup = new mapboxgl.Popup({
   closeButton: false,
   closeOnClick: false
 });
 
-map.on('click', 'faas-point', function (e) {
+map.on('click', 'fassLayer', function (e) {
+  map.getCanvas().style.cursor = 'pointer';
   new mapboxgl.Popup()
     .setLngLat(e.lngLat)
     .setHTML(
@@ -43,14 +35,92 @@ map.on('click', 'faas-point', function (e) {
     .addTo(map);
 });
 
-// Use the same approach as above to indicate that the symbols are clickable
-// by changing the cursor style to 'pointer'.
-map.on('mousemove', function (e) {
-  let features = map.queryRenderedFeatures(e.point, {
-    layers: ['faas-point']
-  });
-  map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+map.on('click', 'cigarLayer', function (e) {
+  map.getCanvas().style.cursor = 'pointer';
+  new mapboxgl.Popup()
+    .setLngLat(e.lngLat)
+    .setHTML(
+      "方向 : " + e.features[0].properties.Direction +
+      "<br/> 動作中 : " + e.features[0].properties.InOperating + 
+      "<br/> Datetime : " + e.features[0].properties.Datetime)
+    .addTo(map);
 });
+
+let swatches = document.getElementById('swatches');
+let layer = document.getElementById('layer');
+let colors = [
+      '#ffffcc',
+      '#a1dab4',
+      '#41b6c4',
+      '#2c7fb8',
+      '#253494',
+      '#fed976',
+      '#feb24c',
+      '#fd8d3c',
+      '#f03b20',
+      '#bd0026'
+    ];
+ 
+colors.forEach(function(color) {
+  let swatch = document.createElement('button');
+  swatch.style.backgroundColor = color;
+  swatch.addEventListener('click', function() {
+    map.setPaintProperty(layer.value, 'circle-color', color);
+  });
+  swatches.appendChild(swatch);
+});
+
+const getD6NPoints = (d6N) => {
+  let mPoints = d6N.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude], 
+    { 
+      Direction: d.Direction,
+      InOperating: d.InOperating,
+      Datetime: d.Datetime,
+      id: i 
+    }  
+    ));
+  return mPoints;
+};
+
+const getD6RPoints = (d6R) => {
+  let mPoints = d6R.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude], 
+    { 
+      Direction: d.Direction,
+      InOperating: d.InOperating,
+      Datetime: d.Datetime,
+      id: i 
+    }  
+    ));
+  return mPoints;
+};
+
+const getZH200Points = (zH200) => {
+  let mPoints = zH200.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude], 
+    { 
+      Direction: d.Direction,
+      InOperating: d.InOperating,
+      Datetime: d.Datetime,
+      id: i 
+    }  
+    ));
+  return mPoints;
+};
+
+const getZH470Points = (zH470) => {
+  let mPoints = zH470.map((d, i) => turf.point(
+    [d.Location.Longitude, d.Location.Latitude], 
+    { 
+      Direction: d.Direction,
+      InOperating: d.InOperating,
+      Datetime: d.Datetime,
+      id: i 
+    }  
+    ));
+  return mPoints;
+};
 
 const getD37PXIPoints = (d37PXI) => {
   let mPoints = d37PXI.map((d, i) => turf.point(
@@ -73,7 +143,7 @@ const getD61PXIPoints = (d61PXI) => {
       FuelRemaining: d.FuelRemaining.Percent,
       FuelUsed: d.FuelUsed.FuelConsumed,
       FuelUsedLast24: d.FuelUsedLast24.FuelConsumed,
-      datetime: d.Location.datetime,
+      datetime: d.Location.datetime, 
       id: i 
     }  
     ));
@@ -144,54 +214,41 @@ const faasToMap = (faasData) => {
     });
 
     map.addLayer({
-      id: 'faas-point',
+      id: 'fassLayer',
       type: 'circle',
       source: 'faasData',
       paint: {
-        'circle-color': '#D49A66',
-        // Add data-driven styles for circle radius
-        'circle-radius': {
-          property: 'FuelUsed',
-          type: 'exponential',
-          stops: [
-            [124, 2],
-            [34615, 10]
-          ]
-        },
-        'circle-opacity': 0.8
+        'circle-radius': 10,
+        'circle-opacity': 0.3,
+        'circle-color': "#CAFF70",
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#fff"
       }
     });
-
-    // By default, exponential property functions have a base of 1.
-    // Exponential functions with a base of 1 are linear.
-    // The relationship between the radius of any point and the number of pedestrians is:
-    // radius = rateOfChange * numberOfPedestrians + radiusAtZero
-    let minRadius = 2;
-    let maxRadius = 10;
-    let minPedestrians = 124;
-    let maxPedestrians = 34615;
-
-    // Find the rateOfChange using two points
-    let rateOfChange = (maxRadius - minRadius) / (maxPedestrians - minPedestrians);
-
-    // Use the rateOfChange to solve for for radiusAtZero
-    // radius = rateOfChange * numberOfPedestrians + radiusAtZero
-    let radiusAtZero = maxRadius - (rateOfChange * maxPedestrians);
-
-    let legend = document.getElementById('legend');
-
-    function circleSize(quantile) {
-      let radius = (rateOfChange * quantile) + radiusAtZero;
-      let diameter = radius * 2;
-      return diameter;
-    }
-    quantiles.forEach(function (quantile) {
-      legend.insertAdjacentHTML('beforeend', '<div><span style="width:' + circleSize(quantile) + 'px;height:' + circleSize(quantile) + 'px;margin: 0 ' + [(20 - circleSize(quantile)) / 2] + 'px"></span><p>' + quantile + '</p></div>');
-    });
-
 };
 
-const handleGetData = (err, d37PXI, d61PXI, hm400, pc138, pc200, pc350) => {
+const cigarToMap = (cigarData) => {
+
+    map.addSource('cigarData', {
+      type: 'geojson',
+      data: cigarData
+    });
+
+    map.addLayer({
+      id: 'cigarLayer',
+      source: 'cigarData',
+      type: 'circle',
+      paint: {
+        'circle-radius': 10,
+        'circle-opacity': 0.3,
+        'circle-color': "#e7ef60",
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#fff"
+      }
+    });
+};
+
+const handleGetData = (err, d37PXI, d61PXI, hm400, pc138, pc200, pc350, d6n, d6r, zh200, zh470) => {
 
     // 建機位置情報
     let d37PXIPoints = getD37PXIPoints(d37PXI);
@@ -209,7 +266,20 @@ const handleGetData = (err, d37PXI, d61PXI, hm400, pc138, pc200, pc350) => {
 
     let faasDataCollection = turf.featureCollection(faasData);
 
+    // シガー
+    let d6nPoints = getD6NPoints(d6n);
+    let d6rPoints = getD6RPoints(d6r);
+    let zh200Points = getZH200Points(zh200);
+    let zh470Points = getZH470Points(zh470);
+
+    let cigarData = d6nPoints.concat(d6rPoints);
+    cigarData = cigarData.concat(zh200Points);
+    cigarData = cigarData.concat(zh470Points);
+
+    let cigarDataCollection = turf.featureCollection(cigarData);
+
     faasToMap(faasDataCollection);
+    cigarToMap(cigarDataCollection);
 
 }
 

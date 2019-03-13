@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Change_Layer_Color</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
+
+    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.1/d3.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/d3-request/1.0.6/d3-request.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/d3-queue/3.0.7/d3-queue.min.js'></script>
+
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+
+        .map-overlay {
+            font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            position: absolute;
+            width: 200px;
+            top: 0;
+            left: 0;
+            padding: 10px;
+        }
+ 
+        .map-overlay .map-overlay-inner {
+            background-color: #fff;
+            box-shadow:0 1px 2px rgba(0, 0, 0, 0.10);
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+ 
+        .map-overlay-inner fieldset {
+            border: none;
+            padding: 0;
+            margin: 0 0 10px;
+        }
+ 
+        .map-overlay-inner fieldset:last-child {
+            margin: 0;
+        }
+ 
+        .map-overlay-inner select {
+            width: 100%;
+        }
+        
+        .map-overlay-inner label {
+            display: block;
+            font-weight: bold;
+            margin: 0 0 5px;
+        }
+        
+        .map-overlay-inner button {
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+            border: none;
+            cursor: pointer;
+        }
+ 
+        .map-overlay-inner button:focus {
+            outline: none;
+        }
+ 
+        .map-overlay-inner button:hover {
+            box-shadow:inset 0 0 0 3px rgba(0, 0, 0, 0.10);
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+    <div class='map-overlay top'>
+    <div class='map-overlay-inner'>
+        <fieldset>
+            <label>レイヤの選択</label>
+            <select id='layer' name='layer'>
+                <option value='cigarLayer'>シーガーデータ</option>
+                <option value='fassLayer'>建機位置情報</option>
+            </select>
+        </fieldset>
+        <fieldset>
+            <label>色の選択</label>
+            <div id='swatches'></div>
+        </fieldset>
+    </div>
+    </div>
+</body>
+
+<script type="text/javascript" src=./07_change_layer_color.js></script> 
+
+</html>
+
