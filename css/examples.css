@@ -72,6 +72,13 @@
   background-size: cover;
 }
 
+.mapbox_08_img {
+  width: 100%;
+  height: 250px;
+  background: url('../image/08_wmts_layer.png');
+  background-size: cover;
+}
+
 footer {
   padding-top: 3rem;
   padding-bottom: 3rem;
