@@ -15,48 +15,32 @@
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
     <style>
       body {
-        font-family: Helvetica, Arial, sans-serif;
         width: 100vw;
         height: 100vh;
         margin: 0;
       }
-      #control-panel {
-        position: absolute;
-        background: #fff;
-        top: 0;
-        left: 0;
-        margin: 12px;
-        padding: 20px;
-        font-size: 12px;
-        line-height: 1.5;
-        z-index: 1;
+      #tooltip:empty {
+        display: none;
       }
-      label {
-        display: inline-block;
-        width: 140px;
-      }    
+      #tooltip {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 11px;
+        position: absolute;
+        padding: 4px;
+        margin: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        max-width: 300px;
+        font-size: 10px;
+        z-index: 9;
+        pointer-events: none;
+      }
     </style>
 </head>
 
 <body>
-    <div id="control-panel">
-        <div>
-            <label>Radius</label>
-            <input id="radius" type="range" min="1000" max="20000" step="1000" value="1000"></input>
-            <span id="radius-value"></span>
-        </div>
-        <div>
-            <label>Coverage</label>
-            <input id="coverage" type="range" min="0" max="1" step="0.1" value="1"></input>
-            <span id="coverage-value"></span>
-        </div>
-        <div>
-            <label>Upper Percentile</label>
-            <input id="upperPercentile" type="range" min="90" max="100" step="1" value="100"></input>
-            <span id="upperPercentile-value"></span>
-        </div>
-    </div>
-    <div id='map'></div>
+  <div id="tooltip"></div>
+  <div id='map'></div>
 </body>
 
 <script type="text/javascript" src=./10_pop_mesh.js></script> 
