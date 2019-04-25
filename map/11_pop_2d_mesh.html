@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>1kmメッシュ別将来推計人口（H30国政局推計）</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
+    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+    
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-queue.v3.min.js"></script>
+    <script src="https://d3js.org/d3-request.v1.min.js"></script>
+
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
+    
+    <style>
+      body { margin:0; padding:0; }
+      #map { position:absolute; top:0; bottom:0; width:100%; }
+
+      .legend {
+            background-color: #fff;
+            border-radius: 3px;
+            bottom: 30px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+            font: 15px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            padding: 10px;
+            position: absolute;
+            right: 10px;
+            z-index: 1;
+        }
+        .legend h4 {
+            margin: 0 0 10px;
+        }
+        .legend div span {
+            border-radius: 50%;
+            display: inline-block;
+            height: 15px;
+            margin-right: 10px;
+            width: 15px;
+            color:orangered
+        }
+        #tooltip:empty {
+           display: none;
+        }
+        #tooltip {
+          font-family: Helvetica, Arial, sans-serif;
+          font-size: 11px;
+          position: absolute;
+          padding: 4px;
+          margin: 8px;
+          background: rgba(0, 0, 0, 0.8);
+          color: #fff;
+          max-width: 300px;
+          font-size: 10px;
+          z-index: 9;
+          pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+  <div id="tooltip"></div>
+  <div id='map'></div>
+  <div id='county-legend' class='legend'>
+    <h4>1kmメッシュ別将来推計人口 2050年</h4>
+      <div><span style='background-color: rgb(215, 25, 28)'></span>0 - 4,000</div>
+      <div><span style='background-color: rgb(232, 91, 58)'></span>4,000 - 8,000</div>
+      <div><span style='background-color: rgb(249, 158, 89)'></span>8,000 - 12,000</div>
+      <div><span style='background-color: rgb(254, 201, 128)'></span>12,000 - 16,000</div>
+      <div><span style='background-color: rgb(255, 237, 170)'></span>16,000 - 20,000</div>
+      <div><span style='background-color: rgb(237, 247, 201)'></span>20,000 - 24,000</div>
+      <div><span style='background-color: rgb(199, 230, 219)'></span>24,000 - 28,000</div>
+      <div><span style='background-color: rgb(157, 207, 228)'></span>28,000 - 32,000</div>
+      <div><span style='background-color: rgb(100, 165, 205)'></span>32,000 - 36,000</div>
+      <div><span style='background-color: rgb(44, 123, 182)'></span>36,000 - 40,000</div>
+</div>        
+
+</body>
+
+<script type="text/javascript" src=./11_pop_2d_mesh.js></script> 
+
+</html>
+
