@@ -2,7 +2,7 @@ mapboxgl.accessToken = 'pk.eyJ1IjoidmFsdWVjcmVhdGlvbiIsImEiOiJjanM0Z21xamQwNHRrM
 
 const map = new mapboxgl.Map({
   container: 'map', // container id
-  style: 'mapbox://styles/mapbox/dark-v9',
+  style: 'mapbox://styles/mapbox/light-v10',
   center: [139.657125, 35.661236],
   zoom: 10, // starting zoom
   pitch: 40
@@ -41,7 +41,7 @@ map.on("mousemove", "2DmeshLayer", function(e) {
   popup.setLngLat(e.lngLat)
     .setHTML(
       "<div><b>市区町村コード &nbsp;</b>" + e.features[0].properties.SHICODE + "</div>" + 
-      "<div><b>2050年 総人口数（男女計）</b></div>" + 
+      "<div><b>将来推計人口 2050年 (男女計)</b></div>" + 
       "<div>" + Math.round(e.features[0].properties.PT0_2050) + "人</div>")
     .addTo(map);
 
