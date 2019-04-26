@@ -42,7 +42,7 @@ map.on("mousemove", "2DmeshLayer", function(e) {
     .setHTML(
       "<div><b>市区町村コード &nbsp;</b>" + e.features[0].properties.SHICODE + "</div>" + 
       "<div><b>将来推計人口 2050年 (男女計)</b></div>" + 
-      "<div>" + Math.round(e.features[0].properties.PT0_2050) + "人</div>")
+      "<div>" + Math.round(e.features[0].properties.PT0_2050) + " 人</div>")
     .addTo(map);
 
 });
